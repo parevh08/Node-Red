@@ -2,9 +2,25 @@
     {
         "id": "60c11e914ecbf178",
         "type": "tab",
-        "label": "Main",
+        "label": "Commands",
         "disabled": false,
-        "info": "Первый поток",
+        "info": "Потік, який оброблює команди телеграм боту",
+        "env": []
+    },
+    {
+        "id": "638a8070dc9d0911",
+        "type": "tab",
+        "label": "Callback",
+        "disabled": false,
+        "info": "Потік який оброблює натиски на кнопки графічного калькулятора",
+        "env": []
+    },
+    {
+        "id": "14d90be07133a8ea",
+        "type": "tab",
+        "label": "Receiver",
+        "disabled": false,
+        "info": "Потік, який оброблює текст надісланий користувачем",
         "env": []
     },
     {
@@ -78,43 +94,7 @@
         "finalize": "",
         "libs": [],
         "x": 580,
-        "y": 300,
-        "wires": [
-            [
-                "ca854a8e4b98b683"
-            ]
-        ]
-    },
-    {
-        "id": "386f60ca1c45647e",
-        "type": "telegram event",
-        "z": "60c11e914ecbf178",
-        "name": "",
-        "bot": "1d145f28bba3db07",
-        "event": "callback_query",
-        "autoanswer": false,
-        "x": 380,
-        "y": 160,
-        "wires": [
-            [
-                "6e830ad791c1006f"
-            ]
-        ]
-    },
-    {
-        "id": "6e830ad791c1006f",
-        "type": "function",
-        "z": "60c11e914ecbf178",
-        "name": "Calculate",
-        "func": "//node.warn(msg);\n\nconst chatId = msg.payload.chatId;\nconst messageId = msg.payload.messageId;\nconst callbackData = msg.originalMessage.data;\n\nif (!callbackData) { return null };\n\nlet currentExpression = context.get(\"expression\") || \"\";\n\nif (callbackData === \"=\") {\n    if (!currentExpression) {\n        msg.payload = {\n            chatId: chatId,\n            type: \"message\",\n            content: \"Помилка виразу. Спробуйте ще раз.\",\n        };\n        return msg;\n    }\n\n    try {\n        const result = eval(currentExpression);\n        msg.payload = {\n            chatId: chatId,\n            type: \"message\",\n            content: `Тримай результат: ${result}`,\n        };\n    } catch (error) {\n        msg.payload = {\n            chatId: chatId,\n            type: \"message\",\n            content: \"Щось ти не правильно ввів, спробуй ще раз!\",\n        };\n    }\n\n    context.set(\"expression\", \"\");\n} else {\n    currentExpression += callbackData;\n    context.set(\"expression\", currentExpression);\n\n    msg.payload = {\n        chatId: chatId,\n        type: \"message\",\n        content: `Поточний вираз: ${currentExpression}`,\n    };\n}\n\nreturn msg;",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 560,
-        "y": 160,
+        "y": 240,
         "wires": [
             [
                 "ca854a8e4b98b683"
@@ -138,7 +118,7 @@
         "removeregexcommand": false,
         "outputs": 2,
         "x": 360,
-        "y": 300,
+        "y": 240,
         "wires": [
             [
                 "400a3e453bf4c79d"
@@ -147,15 +127,128 @@
         ]
     },
     {
+        "id": "ceca0bd89a9cefba",
+        "type": "telegram command",
+        "z": "60c11e914ecbf178",
+        "name": "",
+        "command": "/start",
+        "description": "",
+        "registercommand": false,
+        "language": "",
+        "scope": "default",
+        "bot": "1d145f28bba3db07",
+        "strict": false,
+        "hasresponse": true,
+        "useregex": false,
+        "removeregexcommand": false,
+        "outputs": 2,
+        "x": 350,
+        "y": 340,
+        "wires": [
+            [
+                "85c59343fd63651d"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "85c59343fd63651d",
+        "type": "function",
+        "z": "60c11e914ecbf178",
+        "name": "StartMessage",
+        "func": "const chatId = msg.payload.chatId;\n\nmsg.payload = {\n    chatId: chatId,\n    type: \"message\",\n    content: \"Вітаю, цей бот дає результат математичним виразам.\\n Ви можете викликати графічний калькулятор вибравши в меню команду /calculator.\\n Також ви можете ввести вираз власноруч. \\n Математичні оператори які підтримує цей бот: \\n (+) - додати \\n (-) - відняти \\n (*) - помножити \\n (/) - поділити \\n Приємного користування!\", \n};\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 600,
+        "y": 340,
+        "wires": [
+            [
+                "ca854a8e4b98b683"
+            ]
+        ]
+    },
+    {
+        "id": "386f60ca1c45647e",
+        "type": "telegram event",
+        "z": "638a8070dc9d0911",
+        "name": "",
+        "bot": "1d145f28bba3db07",
+        "event": "callback_query",
+        "autoanswer": false,
+        "x": 440,
+        "y": 260,
+        "wires": [
+            [
+                "6e830ad791c1006f"
+            ]
+        ]
+    },
+    {
+        "id": "6e830ad791c1006f",
+        "type": "function",
+        "z": "638a8070dc9d0911",
+        "name": "Calculate",
+        "func": "//node.warn(msg);\n\nconst chatId = msg.payload.chatId;\nconst messageId = msg.payload.messageId;\nconst callbackData = msg.originalMessage.data;\n\nif (!callbackData) { return null };\n\nlet currentExpression = context.get(\"expression\") || \"\";\n\nif (callbackData === \"=\") {\n    if (!currentExpression) {\n        msg.payload = {\n            chatId: chatId,\n            type: \"message\",\n            content: \"Помилка виразу. Спробуйте ще раз.\",\n        };\n        return msg;\n    }\n\n    try {\n        const result = eval(currentExpression);\n        msg.payload = {\n            chatId: chatId,\n            type: \"message\",\n            content: `Тримай результат: ${result}`,\n        };\n    } catch (error) {\n        msg.payload = {\n            chatId: chatId,\n            type: \"message\",\n            content: \"Щось ти не правильно ввів, спробуй ще раз!\",\n        };\n    }\n\n    context.set(\"expression\", \"\");\n} else {\n    currentExpression += callbackData;\n    context.set(\"expression\", currentExpression);\n\n    msg.payload = {\n        chatId: chatId,\n        type: \"message\",\n        content: `Поточний вираз: ${currentExpression}`,\n    };\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 620,
+        "y": 260,
+        "wires": [
+            [
+                "b3c5ea256c0336f0"
+            ]
+        ]
+    },
+    {
+        "id": "b3c5ea256c0336f0",
+        "type": "telegram sender",
+        "z": "638a8070dc9d0911",
+        "name": "",
+        "bot": "1d145f28bba3db07",
+        "haserroroutput": false,
+        "outputs": 1,
+        "x": 840,
+        "y": 260,
+        "wires": [
+            [
+                "67b423e9e14a7cab"
+            ]
+        ]
+    },
+    {
+        "id": "67b423e9e14a7cab",
+        "type": "debug",
+        "z": "638a8070dc9d0911",
+        "name": "debug 3",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1020,
+        "y": 260,
+        "wires": []
+    },
+    {
         "id": "302280cba57eab6d",
         "type": "telegram receiver",
-        "z": "60c11e914ecbf178",
+        "z": "14d90be07133a8ea",
         "name": "",
         "bot": "1d145f28bba3db07",
         "saveDataDir": "",
         "filterCommands": true,
-        "x": 380,
-        "y": 460,
+        "x": 400,
+        "y": 300,
         "wires": [
             [
                 "71eded41b5b7018d"
@@ -166,21 +259,53 @@
     {
         "id": "71eded41b5b7018d",
         "type": "function",
-        "z": "60c11e914ecbf178",
+        "z": "14d90be07133a8ea",
         "name": "Calculate",
-        "func": "\nif (msg.payload.content.startsWith(\"/start\")) { return null };\n\nfunction calculateExpression(expression) {\n    try {\n        const result = eval(expression);\n        if (isNaN(result) || !isFinite(result)) {\n            throw new Error(\"Invalid expression\");\n        }\n        return result;\n    } catch (error) {\n        console.error(\"Error calculating:\", error.message);\n        return null;\n    }\n};\n\nlet currentExpression = context.get(\"expression\") || \"\";\nconst userInput = msg.payload.content;\nconst mathComponents = userInput.match(/[0-9+\\-*/.]/g);\nconst mathExpression = mathComponents ? mathComponents.join('') : '';\nconst result = calculateExpression(mathExpression);\n\nmsg.payload = {\n    chatId: msg.payload.chatId,\n    type: \"message\",\n    content: `${result !== null ? result : 'Недійсний вираз, ану поправ'}`,\n};\n\nreturn msg;",
+        "func": "\nif (msg.payload.content.startsWith(\"/\")) { return null };\n\nfunction calculateExpression(expression) {\n    try {\n        const result = eval(expression);\n        if (isNaN(result) || !isFinite(result)) {\n            throw new Error(\"Invalid expression\");\n        }\n        return result;\n    } catch (error) {\n        console.error(\"Error calculating:\", error.message);\n        return null;\n    }\n};\n\nlet currentExpression = context.get(\"expression\") || \"\";\nconst userInput = msg.payload.content;\nconst mathComponents = userInput.match(/[0-9+\\-*/.]/g);\nconst mathExpression = mathComponents ? mathComponents.join('') : '';\nconst result = calculateExpression(mathExpression);\n\nmsg.payload = {\n    chatId: msg.payload.chatId,\n    type: \"message\",\n    content: `${result !== null ? `Тримай результат: ${result}`  : 'Недійсний вираз, ану поправ'}`,\n};\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 560,
-        "y": 460,
+        "x": 600,
+        "y": 300,
         "wires": [
             [
-                "ca854a8e4b98b683"
+                "f36464c829dcc69d"
             ]
         ]
+    },
+    {
+        "id": "f36464c829dcc69d",
+        "type": "telegram sender",
+        "z": "14d90be07133a8ea",
+        "name": "",
+        "bot": "1d145f28bba3db07",
+        "haserroroutput": false,
+        "outputs": 1,
+        "x": 780,
+        "y": 300,
+        "wires": [
+            [
+                "95124c0c08b7eb5b"
+            ]
+        ]
+    },
+    {
+        "id": "95124c0c08b7eb5b",
+        "type": "debug",
+        "z": "14d90be07133a8ea",
+        "name": "debug 2",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 960,
+        "y": 300,
+        "wires": []
     }
 ]
