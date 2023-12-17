@@ -1,0 +1,519 @@
+[
+    {
+        "id": "c570873a66cf2c44",
+        "type": "tab",
+        "label": "Commands",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "378e6b74fa3e5e11",
+        "type": "tab",
+        "label": "Callback Handle",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "fee02bcb3aaea782",
+        "type": "telegram bot",
+        "botname": "technikalMovie_bot",
+        "usernames": "",
+        "chatids": "",
+        "baseapiurl": "",
+        "updatemode": "polling",
+        "pollinterval": "300",
+        "usesocks": false,
+        "sockshost": "",
+        "socksprotocol": "socks5",
+        "socksport": "6667",
+        "socksusername": "anonymous",
+        "sockspassword": "",
+        "bothost": "",
+        "botpath": "",
+        "localbotport": "8443",
+        "publicbotport": "8443",
+        "privatekey": "",
+        "certificate": "",
+        "useselfsignedcertificate": false,
+        "sslterminated": false,
+        "verboselogging": false
+    },
+    {
+        "id": "695db95393f18318",
+        "type": "telegram command",
+        "z": "c570873a66cf2c44",
+        "name": "",
+        "command": "/start",
+        "description": "",
+        "registercommand": false,
+        "language": "",
+        "scope": "default",
+        "bot": "fee02bcb3aaea782",
+        "strict": false,
+        "hasresponse": true,
+        "useregex": false,
+        "removeregexcommand": false,
+        "outputs": 2,
+        "x": 150,
+        "y": 120,
+        "wires": [
+            [
+                "c76b4a12c213425d"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "c76b4a12c213425d",
+        "type": "function",
+        "z": "c570873a66cf2c44",
+        "name": "greeating message",
+        "func": "const chatId = msg.payload.chatId;\nconst favoriteMovies = new Set();\nconst movieMessageDict = {};\nglobal.set(`movieMessageDict`, movieMessageDict);\nglobal.set(`favoriteMovies`, favoriteMovies);\nglobal.set('chatId', chatId);\n\nmsg.payload = {\n  chatId: chatId,\n  type: 'message',\n  content: 'Привіт, допоможу тобі знайти цікавий фільм.',\n  options: {\n   reply_markup: {\n    inline_keyboard: [\n      [{ text: \"Шукати фільм\", callback_data: \"search\"}]\n    ]\n   } \n  }\n};\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 350,
+        "y": 120,
+        "wires": [
+            [
+                "567628db04327cf1"
+            ]
+        ]
+    },
+    {
+        "id": "567628db04327cf1",
+        "type": "telegram sender",
+        "z": "c570873a66cf2c44",
+        "name": "send greeating message",
+        "bot": "fee02bcb3aaea782",
+        "haserroroutput": false,
+        "outputs": 1,
+        "x": 610,
+        "y": 120,
+        "wires": [
+            [
+                "2d9c852def667b46"
+            ]
+        ]
+    },
+    {
+        "id": "9e810b3ee06bb079",
+        "type": "telegram command",
+        "z": "c570873a66cf2c44",
+        "name": "",
+        "command": "/showfavorites",
+        "description": "",
+        "registercommand": false,
+        "language": "",
+        "scope": "default",
+        "bot": "fee02bcb3aaea782",
+        "strict": false,
+        "hasresponse": true,
+        "useregex": false,
+        "removeregexcommand": false,
+        "outputs": 2,
+        "x": 180,
+        "y": 300,
+        "wires": [
+            [
+                "97705924e6fc266b"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "97705924e6fc266b",
+        "type": "function",
+        "z": "c570873a66cf2c44",
+        "name": "prepareMessage",
+        "func": "const chatId = global.get(`chatId`);\nconst favoriteMovies = global.get(`favoriteMovies`);\n\nif (favoriteMovies !== undefined && favoriteMovies !== null) {\n    prepareMessage(true);\n} else {\n    prepareMessage(false);\n}\n\nreturn msg;\n\nfunction prepareMessage(bool) {\n    let content = \"\";\n    let options = {};\n    if (bool) {\n        content = \"Ваші улюбленні фільми:\";\n        const movies = Array.from(favoriteMovies);\n        let buttons = [];\n        movies.forEach((value) => {\n            buttons.push([{ text: value.title, callback_data: \"AA\" }, { text: \"❌\", callback_data: \"delete\" }]);\n        });\n        options = {\n            reply_markup: {\n                inline_keyboard: buttons,\n            },\n        };\n    } else {\n        content = \"Ви не додали жодного фільму до улюблених!\";\n    }\n\n    msg.payload = {\n        chatId: global.get(`chatId`),\n        type: \"message\",\n        content: content,\n        options: options,\n    };\n}\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 410,
+        "y": 300,
+        "wires": [
+            [
+                "d4d9d2f5f116d1cc"
+            ]
+        ]
+    },
+    {
+        "id": "d4d9d2f5f116d1cc",
+        "type": "telegram sender",
+        "z": "c570873a66cf2c44",
+        "name": "send favorites movie",
+        "bot": "fee02bcb3aaea782",
+        "haserroroutput": false,
+        "outputs": 1,
+        "x": 680,
+        "y": 300,
+        "wires": [
+            [
+                "d45b7a4f9cb39c40"
+            ]
+        ]
+    },
+    {
+        "id": "2d9c852def667b46",
+        "type": "debug",
+        "z": "c570873a66cf2c44",
+        "name": "msg.payload",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 870,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "d45b7a4f9cb39c40",
+        "type": "debug",
+        "z": "c570873a66cf2c44",
+        "name": "msg.payload",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 930,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "cd056f9ab7393d72",
+        "type": "telegram event",
+        "z": "378e6b74fa3e5e11",
+        "name": "MovieSearchButtons",
+        "bot": "fee02bcb3aaea782",
+        "event": "callback_query",
+        "autoanswer": false,
+        "x": 120,
+        "y": 280,
+        "wires": [
+            [
+                "8eaf282478737307"
+            ]
+        ]
+    },
+    {
+        "id": "0b4ad6bb822644ea",
+        "type": "http request",
+        "z": "378e6b74fa3e5e11",
+        "name": "",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "https://api.themoviedb.org/3/movie/top_rated?language=uk-EU&api_key=c1a5165cc29b025e7b86d069d5f72c21",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 530,
+        "y": 200,
+        "wires": [
+            [
+                "b96546fa5e37480a"
+            ]
+        ]
+    },
+    {
+        "id": "b96546fa5e37480a",
+        "type": "function",
+        "z": "378e6b74fa3e5e11",
+        "name": "SetupResults",
+        "func": "const movies = msg.payload.results;\nglobal.set(`movies`, movies);\nglobal.set(`movieIndex`, 0);\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 720,
+        "y": 200,
+        "wires": [
+            [
+                "fd0118a94948c41b"
+            ]
+        ]
+    },
+    {
+        "id": "4b04b3aa6a95fefd",
+        "type": "telegram sender",
+        "z": "378e6b74fa3e5e11",
+        "name": "send movie",
+        "bot": "fee02bcb3aaea782",
+        "haserroroutput": true,
+        "outputs": 2,
+        "x": 1150,
+        "y": 240,
+        "wires": [
+            [
+                "b070955267f8c108"
+            ],
+            [
+                "04526bb1d90ad5df"
+            ]
+        ]
+    },
+    {
+        "id": "b070955267f8c108",
+        "type": "debug",
+        "z": "378e6b74fa3e5e11",
+        "name": "msg.payload",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1370,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "8eaf282478737307",
+        "type": "switch",
+        "z": "378e6b74fa3e5e11",
+        "name": "switchCallback",
+        "property": "originalMessage.data",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "search",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "next",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 320,
+        "y": 280,
+        "wires": [
+            [
+                "0b4ad6bb822644ea"
+            ],
+            [
+                "71946659dc080187"
+            ]
+        ]
+    },
+    {
+        "id": "71946659dc080187",
+        "type": "function",
+        "z": "378e6b74fa3e5e11",
+        "name": "SetupMovieIndex",
+        "func": "const index = global.get(`movieIndex`);\nglobal.set(`movieIndex`, index + 1);\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 610,
+        "y": 280,
+        "wires": [
+            [
+                "fd0118a94948c41b"
+            ]
+        ]
+    },
+    {
+        "id": "fd0118a94948c41b",
+        "type": "function",
+        "z": "378e6b74fa3e5e11",
+        "name": "prepareMessage",
+        "func": "const chatId = global.get(`chatId`);\nconst movies = global.get(`movies`);\nconst movieIndex = global.get(`movieIndex`);\nconst movie = movies[movieIndex];\n\nmsg.payload = {\n    chatId: chatId,\n    type: \"message\",\n    content: prepareText(movie),\n    options: {\n        reply_markup: {\n            inline_keyboard: [\n                [{ text: \"Наступний фільм\", callback_data: \"next\" }, { text: \"❤️\", callback_data: \"addToFavorite\" }]\n            ]\n        }\n    }\n};\n\nreturn msg;\n\nfunction prepareText(movie) {\n    return `${movie.title}\\n\\n${movie.overview}\\n\\nОцінка: ${movie.vote_average}`\n};\n\nfunction prepareImageUrl(movie) {\n    return `https://image.tmdb.org/t/p/w400` + movie.poster_path\n};\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 930,
+        "y": 240,
+        "wires": [
+            [
+                "4b04b3aa6a95fefd"
+            ]
+        ]
+    },
+    {
+        "id": "47cec5539b18e654",
+        "type": "telegram event",
+        "z": "378e6b74fa3e5e11",
+        "name": "FavoriteButtons",
+        "bot": "fee02bcb3aaea782",
+        "event": "callback_query",
+        "autoanswer": false,
+        "x": 100,
+        "y": 520,
+        "wires": [
+            [
+                "9973b14b370f5e7c"
+            ]
+        ]
+    },
+    {
+        "id": "9973b14b370f5e7c",
+        "type": "switch",
+        "z": "378e6b74fa3e5e11",
+        "name": "",
+        "property": "originalMessage.data",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "addToFavorite",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 310,
+        "y": 520,
+        "wires": [
+            [
+                "3e0c873d8f138e7d"
+            ]
+        ]
+    },
+    {
+        "id": "3e0c873d8f138e7d",
+        "type": "function",
+        "z": "378e6b74fa3e5e11",
+        "name": "SetMovieToFavorites",
+        "func": "const movies = global.get(`movies`);\nconst movieIndex = global.get(`movieIndex`);\nconst movie = movies[movieIndex];\nconst favotireMovies = global.get(`favoriteMovies`);\n\nif (!favotireMovies.has(movie)) {\n    favotireMovies.add(movie);\n    global.set(`favoriteMovies`, favotireMovies);\n    \n    msg.payload = {\n        has: false,\n    }\n} else {\n    msg.payload = {\n        has: true,\n    }\n}\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 520,
+        "y": 520,
+        "wires": [
+            [
+                "5b9b8612db7c582d"
+            ]
+        ]
+    },
+    {
+        "id": "5b9b8612db7c582d",
+        "type": "function",
+        "z": "378e6b74fa3e5e11",
+        "name": "prepareMessage",
+        "func": "const chatId = global.get(`chatId`);\n\nif (msg.payload.has === true) {\n  msg.payload = {\n    chatId: chatId,\n    type: \"message\",\n    content: \"Цей фільм вже є у улюбленних\",\n    options: {\n      reply_markup: {\n        inline_keyboard: [\n          [{ text: \"Наступний фільм\", callback_data: \"next\" }]\n        ]\n      }\n    }\n  };\n} else {\n  msg.payload = {\n    chatId: chatId,\n    type: \"message\",\n    content: \"Додано до Улюблених\",\n    options: {\n      reply_markup: {\n        inline_keyboard: [\n          [{ text: \"Наступний фільм\", callback_data: \"next\" }]\n        ]\n      }\n    }\n  };\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 750,
+        "y": 520,
+        "wires": [
+            [
+                "e7d2191610b29698"
+            ]
+        ]
+    },
+    {
+        "id": "e7d2191610b29698",
+        "type": "telegram sender",
+        "z": "378e6b74fa3e5e11",
+        "name": "sendMessage",
+        "bot": "fee02bcb3aaea782",
+        "haserroroutput": true,
+        "outputs": 2,
+        "x": 1020,
+        "y": 520,
+        "wires": [
+            [
+                "f86e06538383ab7f"
+            ],
+            [
+                "d5656238cfae8df2"
+            ]
+        ]
+    },
+    {
+        "id": "f86e06538383ab7f",
+        "type": "debug",
+        "z": "378e6b74fa3e5e11",
+        "name": "msg.payload",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1250,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "04526bb1d90ad5df",
+        "type": "debug",
+        "z": "378e6b74fa3e5e11",
+        "name": "ERROR",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1380,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "d5656238cfae8df2",
+        "type": "debug",
+        "z": "378e6b74fa3e5e11",
+        "name": "ERROR",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1240,
+        "y": 580,
+        "wires": []
+    }
+]
