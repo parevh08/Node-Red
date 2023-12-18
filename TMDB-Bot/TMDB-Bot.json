@@ -60,7 +60,8 @@
         "y": 120,
         "wires": [
             [
-                "c76b4a12c213425d"
+                "c76b4a12c213425d",
+                "517412c30d25a791"
             ],
             []
         ]
@@ -70,7 +71,7 @@
         "type": "function",
         "z": "c570873a66cf2c44",
         "name": "greeating message",
-        "func": "const chatId = msg.payload.chatId;\nconst favoriteMovies = new Set();\nconst movieMessageDict = {};\nglobal.set(`movieMessageDict`, movieMessageDict);\nglobal.set(`favoriteMovies`, favoriteMovies);\nglobal.set('chatId', chatId);\n\nmsg.payload = {\n  chatId: chatId,\n  type: 'message',\n  content: 'Привіт, допоможу тобі знайти цікавий фільм.',\n  options: {\n   reply_markup: {\n    inline_keyboard: [\n      [{ text: \"Шукати фільм\", callback_data: \"search\"}]\n    ]\n   } \n  }\n};\n\nreturn msg;\n",
+        "func": "const chatId = msg.payload.chatId;\n\nmsg.payload = {\n  chatId: chatId,\n  type: 'message',\n  content: 'Привіт, допоможу тобі знайти цікавий фільм.\\nТи можеш добавляти фільми в улюбленні тицнувши на ❤️.\\nТакож можеш подивитися та редагувати каталог улюбленних фільмів натиснувши в тут або в меню на /showfavorites',\n  options: {\n   reply_markup: {\n    inline_keyboard: [\n      [{ text: \"Шукати фільм\", callback_data: \"search\"}]\n    ]\n   } \n  }\n};\n\nreturn msg;\n",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -131,7 +132,7 @@
         "type": "function",
         "z": "c570873a66cf2c44",
         "name": "prepareMessage",
-        "func": "const chatId = global.get(`chatId`);\nconst favoriteMovies = global.get(`favoriteMovies`);\n\nif (favoriteMovies !== undefined && favoriteMovies !== null) {\n    prepareMessage(true);\n} else {\n    prepareMessage(false);\n}\n\nreturn msg;\n\nfunction prepareMessage(bool) {\n    let content = \"\";\n    let options = {};\n    if (bool) {\n        content = \"Ваші улюбленні фільми:\";\n        const movies = Array.from(favoriteMovies);\n        let buttons = [];\n        movies.forEach((value) => {\n            buttons.push([{ text: value.title, callback_data: \"AA\" }, { text: \"❌\", callback_data: \"delete\" }]);\n        });\n        options = {\n            reply_markup: {\n                inline_keyboard: buttons,\n            },\n        };\n    } else {\n        content = \"Ви не додали жодного фільму до улюблених!\";\n    }\n\n    msg.payload = {\n        chatId: global.get(`chatId`),\n        type: \"message\",\n        content: content,\n        options: options,\n    };\n}\n",
+        "func": "const chatId = global.get(`chatId`);\nconst favoriteMovies = global.get(`favoriteMovies`);\n\nif (favoriteMovies && favoriteMovies.length > 0) {\n    prepareMessage(true);\n} else {\n    prepareMessage(false);\n}\n\nreturn msg;\n\nfunction prepareMessage(bool) {\n    let content = \"\";\n    let options = {};\n    if (bool) {\n        content = \"Ваші улюбленні фільми:\";\n        let buttons = favoriteMovies.map((value) => [{ text: value.title, callback_data: value.title }]);\n        options = {\n            reply_markup: {\n                inline_keyboard: buttons,\n            },\n        };\n    } else {\n        content = \"Ви не додали жодного фільму до улюблених!\";\n    }\n\n    msg.payload = {\n        chatId: chatId,\n        type: \"message\",\n        content: content,\n        options: options,\n    };\n}\n\n",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -197,6 +198,157 @@
         "wires": []
     },
     {
+        "id": "517412c30d25a791",
+        "type": "function",
+        "z": "c570873a66cf2c44",
+        "name": "set global properties",
+        "func": "const chatId = msg.payload.chatId;\n\nconst favoriteMovies = [];\nconst favoriteTitles = [];\nconst movieMessageDict = {};\n\nglobal.set(`movieMessageDict`, movieMessageDict);\nglobal.set(`favoriteMovies`, favoriteMovies);\nglobal.set(`favoriteTitles`, favoriteTitles);\nglobal.set('chatId', chatId);",
+        "outputs": 0,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 360,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "b5fdff2935d0a286",
+        "type": "telegram command",
+        "z": "c570873a66cf2c44",
+        "name": "",
+        "command": "/continuethesearch",
+        "description": "",
+        "registercommand": false,
+        "language": "",
+        "scope": "default",
+        "bot": "fee02bcb3aaea782",
+        "strict": false,
+        "hasresponse": true,
+        "useregex": false,
+        "removeregexcommand": false,
+        "outputs": 2,
+        "x": 190,
+        "y": 480,
+        "wires": [
+            [
+                "1159b980fc6d3a32"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "1159b980fc6d3a32",
+        "type": "function",
+        "z": "c570873a66cf2c44",
+        "name": "handle makeRequest and SetupMovieIndex",
+        "func": "const index = global.get(`movieIndex`);\nconst makeRequest = global.get(`makeRequest`);\n\nif (makeRequest) {\n    global.set(`movieIndex`, index + 1);\n} \n\nmsg.payload = {\n    makeRequest: makeRequest,\n};\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 490,
+        "y": 480,
+        "wires": [
+            [
+                "e0d19d4a21743038"
+            ]
+        ]
+    },
+    {
+        "id": "e7a3f9ecc0c57a28",
+        "type": "telegram sender",
+        "z": "c570873a66cf2c44",
+        "name": "send movie",
+        "bot": "fee02bcb3aaea782",
+        "haserroroutput": true,
+        "outputs": 2,
+        "x": 1050,
+        "y": 480,
+        "wires": [
+            [
+                "4f744f640a8e9a47",
+                "5f3360f84a2d74f6"
+            ],
+            [
+                "cacf6032d6628f41"
+            ]
+        ]
+    },
+    {
+        "id": "4f744f640a8e9a47",
+        "type": "debug",
+        "z": "c570873a66cf2c44",
+        "name": "msg.payload",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1270,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "e0d19d4a21743038",
+        "type": "function",
+        "z": "c570873a66cf2c44",
+        "name": "prepareMessage",
+        "func": "const chatId = global.get(`chatId`);\n\nlet content = \"\";\nlet options = {};\n\nif (msg.payload.makeRequest) {\n    const movies = global.get(`movies`);\n    const movieIndex = global.get(`movieIndex`);\n    const movie = movies[movieIndex];\n    content = prepareText(movie)\n    options = {\n        reply_markup: {\n            inline_keyboard: [\n                [{ text: \"Наступний фільм\", callback_data: \"next\" }, { text: \"❤️\", callback_data: \"addToFavorite\" }]\n            ]\n        }\n    };\n} else {\n    content = \"Ви ще не почали пошук!\"\n    options = {\n        reply_markup: {\n            inline_keyboard: [\n                [{ text: \"Шукати фільм\", callback_data: \"search\" }]\n            ]\n        }\n    }\n}\n\nmsg.payload = {\n    chatId: chatId,\n    type: \"message\",\n    content: content,\n    options: options,\n};\n\nreturn msg;\n\nfunction prepareText(movie) {\n    const roundedVoteAverage = movie.vote_average.toFixed(1);\n    return `${movie.title}\\n\\n${movie.overview}\\n\\nОцінка: ${roundedVoteAverage}`\n};\n\nfunction prepareImageUrl(movie) {\n    return `https://image.tmdb.org/t/p/w400` + movie.poster_path\n};\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 810,
+        "y": 480,
+        "wires": [
+            [
+                "e7a3f9ecc0c57a28"
+            ]
+        ]
+    },
+    {
+        "id": "cacf6032d6628f41",
+        "type": "debug",
+        "z": "c570873a66cf2c44",
+        "name": "ERROR",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1280,
+        "y": 580,
+        "wires": []
+    },
+    {
+        "id": "5f3360f84a2d74f6",
+        "type": "function",
+        "z": "c570873a66cf2c44",
+        "name": "saveMovieCache",
+        "func": "\nconst messageId = msg.payload.sentMessageId;\nconst movies = global.get(`movies`);\nconst movieIndex = global.get(`movieIndex`);\nconst movie = movies[movieIndex];\nconst movieMessageDict = global.get(`movieMessageDict`);\n\nmovieMessageDict[messageId] = movie;\nglobal.set(`movieMessageDict`, movieMessageDict);",
+        "outputs": 0,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1310,
+        "y": 480,
+        "wires": []
+    },
+    {
         "id": "cd056f9ab7393d72",
         "type": "telegram event",
         "z": "378e6b74fa3e5e11",
@@ -241,7 +393,7 @@
         "type": "function",
         "z": "378e6b74fa3e5e11",
         "name": "SetupResults",
-        "func": "const movies = msg.payload.results;\nglobal.set(`movies`, movies);\nglobal.set(`movieIndex`, 0);\nreturn msg;",
+        "func": "const movies = msg.payload.results;\nglobal.set(`movies`, movies);\nglobal.set(`movieIndex`, 0);\nglobal.set(`makeRequest`, true);\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -268,7 +420,8 @@
         "y": 240,
         "wires": [
             [
-                "b070955267f8c108"
+                "b070955267f8c108",
+                "202e490024a60d16"
             ],
             [
                 "04526bb1d90ad5df"
@@ -289,7 +442,7 @@
         "statusVal": "",
         "statusType": "auto",
         "x": 1370,
-        "y": 180,
+        "y": 140,
         "wires": []
     },
     {
@@ -314,7 +467,7 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 320,
+        "x": 340,
         "y": 280,
         "wires": [
             [
@@ -350,7 +503,7 @@
         "type": "function",
         "z": "378e6b74fa3e5e11",
         "name": "prepareMessage",
-        "func": "const chatId = global.get(`chatId`);\nconst movies = global.get(`movies`);\nconst movieIndex = global.get(`movieIndex`);\nconst movie = movies[movieIndex];\n\nmsg.payload = {\n    chatId: chatId,\n    type: \"message\",\n    content: prepareText(movie),\n    options: {\n        reply_markup: {\n            inline_keyboard: [\n                [{ text: \"Наступний фільм\", callback_data: \"next\" }, { text: \"❤️\", callback_data: \"addToFavorite\" }]\n            ]\n        }\n    }\n};\n\nreturn msg;\n\nfunction prepareText(movie) {\n    return `${movie.title}\\n\\n${movie.overview}\\n\\nОцінка: ${movie.vote_average}`\n};\n\nfunction prepareImageUrl(movie) {\n    return `https://image.tmdb.org/t/p/w400` + movie.poster_path\n};\n",
+        "func": "const chatId = global.get(`chatId`);\nconst movies = global.get(`movies`);\nconst movieIndex = global.get(`movieIndex`);\nconst movie = movies[movieIndex];\n\nmsg.payload = {\n    chatId: chatId,\n    type: \"message\",\n    content: prepareText(movie),\n    options: {\n        reply_markup: {\n            inline_keyboard: [\n                [{ text: \"Наступний фільм\", callback_data: \"next\" }, { text: \"❤️\", callback_data: \"addToFavorite\" }]\n            ]\n        }\n    }\n};\n\nreturn msg;\n\nfunction prepareText(movie) {\n    const roundedVoteAverage = movie.vote_average.toFixed(1);\n    return `${movie.title}\\n\\n${movie.overview}\\n\\nОцінка: ${roundedVoteAverage}`\n};\n\nfunction prepareImageUrl(movie) {\n    return `https://image.tmdb.org/t/p/w400` + movie.poster_path\n};\n",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -374,7 +527,7 @@
         "event": "callback_query",
         "autoanswer": false,
         "x": 100,
-        "y": 520,
+        "y": 560,
         "wires": [
             [
                 "9973b14b370f5e7c"
@@ -393,16 +546,24 @@
                 "t": "eq",
                 "v": "addToFavorite",
                 "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "delete",
+                "vt": "str"
             }
         ],
         "checkall": "true",
         "repair": false,
-        "outputs": 1,
+        "outputs": 2,
         "x": 310,
-        "y": 520,
+        "y": 560,
         "wires": [
             [
                 "3e0c873d8f138e7d"
+            ],
+            [
+                "82d309b4051d0622"
             ]
         ]
     },
@@ -411,7 +572,7 @@
         "type": "function",
         "z": "378e6b74fa3e5e11",
         "name": "SetMovieToFavorites",
-        "func": "const movies = global.get(`movies`);\nconst movieIndex = global.get(`movieIndex`);\nconst movie = movies[movieIndex];\nconst favotireMovies = global.get(`favoriteMovies`);\n\nif (!favotireMovies.has(movie)) {\n    favotireMovies.add(movie);\n    global.set(`favoriteMovies`, favotireMovies);\n    \n    msg.payload = {\n        has: false,\n    }\n} else {\n    msg.payload = {\n        has: true,\n    }\n}\n\nreturn msg;\n",
+        "func": "const messageId = msg.originalMessage.message.message_id;\nconst movieMessageDict = global.get(`movieMessageDict`);\nconst movie = movieMessageDict[messageId];\nconst favoriteMovies = global.get(`favoriteMovies`);\nconst favoriteTitles = global.get(`favoriteTitles`);\n\nconst isMovieInFavorites = favoriteMovies.some(favoriteMovies => {\n    return favoriteMovies.title === movie.title; \n});\n\nif (!isMovieInFavorites) {\n    favoriteMovies.push(movie);\n    favoriteTitles.push(movie.title);\n    global.set(`favoriteTitles`, favoriteTitles);\n    global.set(`favoriteMovies`, favoriteMovies);\n    \n    msg.payload = {\n        isMovieInFavorites: false,\n        movie: movie,\n    }\n} else {\n    msg.payload = {\n        isMovieInFavorites: true,\n        movie: movie,\n    }\n}\n\nreturn msg;\n",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -419,7 +580,7 @@
         "finalize": "",
         "libs": [],
         "x": 520,
-        "y": 520,
+        "y": 500,
         "wires": [
             [
                 "5b9b8612db7c582d"
@@ -431,7 +592,7 @@
         "type": "function",
         "z": "378e6b74fa3e5e11",
         "name": "prepareMessage",
-        "func": "const chatId = global.get(`chatId`);\n\nif (msg.payload.has === true) {\n  msg.payload = {\n    chatId: chatId,\n    type: \"message\",\n    content: \"Цей фільм вже є у улюбленних\",\n    options: {\n      reply_markup: {\n        inline_keyboard: [\n          [{ text: \"Наступний фільм\", callback_data: \"next\" }]\n        ]\n      }\n    }\n  };\n} else {\n  msg.payload = {\n    chatId: chatId,\n    type: \"message\",\n    content: \"Додано до Улюблених\",\n    options: {\n      reply_markup: {\n        inline_keyboard: [\n          [{ text: \"Наступний фільм\", callback_data: \"next\" }]\n        ]\n      }\n    }\n  };\n};\nreturn msg;",
+        "func": "const chatId = global.get(`chatId`);\n\nif (msg.payload.isMovieInFavorites === true) {\n  msg.payload = {\n    chatId: chatId,\n    type: \"message\",\n    content: `${msg.payload.movie.title}\\nВже є у улюблених`,\n    options: {\n      reply_markup: {\n        inline_keyboard: [\n          [{ text: \"Наступний фільм\", callback_data: \"next\" }]\n        ]\n      }\n    }\n  };\n} else {\n  msg.payload = {\n    chatId: chatId,\n    type: \"message\",\n    content: `${msg.payload.movie.title}\\nДодано до Улюблених`,\n    options: {\n      reply_markup: {\n        inline_keyboard: [\n          [{ text: \"Наступний фільм\", callback_data: \"next\" }]\n        ]\n      }\n    }\n  };\n};\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -439,7 +600,7 @@
         "finalize": "",
         "libs": [],
         "x": 750,
-        "y": 520,
+        "y": 500,
         "wires": [
             [
                 "e7d2191610b29698"
@@ -454,8 +615,8 @@
         "bot": "fee02bcb3aaea782",
         "haserroroutput": true,
         "outputs": 2,
-        "x": 1020,
-        "y": 520,
+        "x": 1080,
+        "y": 500,
         "wires": [
             [
                 "f86e06538383ab7f"
@@ -478,7 +639,7 @@
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1250,
+        "x": 1350,
         "y": 460,
         "wires": []
     },
@@ -496,7 +657,7 @@
         "statusVal": "",
         "statusType": "auto",
         "x": 1380,
-        "y": 300,
+        "y": 340,
         "wires": []
     },
     {
@@ -512,8 +673,192 @@
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1240,
+        "x": 1340,
         "y": 580,
         "wires": []
+    },
+    {
+        "id": "202e490024a60d16",
+        "type": "function",
+        "z": "378e6b74fa3e5e11",
+        "name": "saveMovieCache",
+        "func": "\nconst messageId = msg.payload.sentMessageId;\nconst movies = global.get(`movies`);\nconst movieIndex = global.get(`movieIndex`);\nconst movie = movies[movieIndex];\nconst movieMessageDict = global.get(`movieMessageDict`);\n\nmovieMessageDict[messageId] = movie;\nglobal.set(`movieMessageDict`, movieMessageDict);",
+        "outputs": 0,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1410,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "2ba66a98d111d475",
+        "type": "telegram event",
+        "z": "378e6b74fa3e5e11",
+        "name": "open Movie with Favorite",
+        "bot": "fee02bcb3aaea782",
+        "event": "callback_query",
+        "autoanswer": false,
+        "x": 140,
+        "y": 940,
+        "wires": [
+            [
+                "42e0045446c6836f"
+            ]
+        ]
+    },
+    {
+        "id": "42e0045446c6836f",
+        "type": "function",
+        "z": "378e6b74fa3e5e11",
+        "name": "handleMovie",
+        "func": "const favoriteTitles = global.get(`favoriteTitles`);\nconst callbackTitle = msg.originalMessage.data;\nconst movieTitle = favoriteTitles.some(title => callbackTitle.includes(title));\nif (movieTitle) {\n    const favoriteMovies = global.get(`favoriteMovies`);\n    const selectedMovie = favoriteMovies.find(movie => movie.title === callbackTitle);\n    msg.payload = {\n        movie: selectedMovie,\n    }\n} else {\n    return null;\n};\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 360,
+        "y": 940,
+        "wires": [
+            [
+                "50543f42fbcad8f8"
+            ]
+        ]
+    },
+    {
+        "id": "50543f42fbcad8f8",
+        "type": "function",
+        "z": "378e6b74fa3e5e11",
+        "name": "prepareMessage",
+        "func": "const chatId = global.get(`chatId`);\nconst movie = msg.payload.movie;\n\nmsg.payload = {\n    chatId: chatId,\n    type: \"message\",\n    content: prepareText(movie),\n    options: {\n        reply_markup: {\n            inline_keyboard: [\n                [{ text: \"❌ Видалити з улюблених\", callback_data: `delete` }]\n            ]\n        }\n    }\n};\n\nreturn msg;\n\nfunction prepareText(movie) {\n    const roundedVoteAverage = movie.vote_average.toFixed(1);\n    return `${movie.title}\\n\\n${movie.overview}\\n\\nОцінка: ${roundedVoteAverage}`\n};\n\nfunction prepareImageUrl(movie) {\n    return `https://image.tmdb.org/t/p/w400` + movie.poster_path\n};\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 570,
+        "y": 940,
+        "wires": [
+            [
+                "4936c3c096eb7a42"
+            ]
+        ]
+    },
+    {
+        "id": "4936c3c096eb7a42",
+        "type": "telegram sender",
+        "z": "378e6b74fa3e5e11",
+        "name": "send movie",
+        "bot": "fee02bcb3aaea782",
+        "haserroroutput": false,
+        "outputs": 1,
+        "x": 800,
+        "y": 940,
+        "wires": [
+            [
+                "5a060a3d5982fb10",
+                "109656721c3f7f75"
+            ]
+        ]
+    },
+    {
+        "id": "5a060a3d5982fb10",
+        "type": "debug",
+        "z": "378e6b74fa3e5e11",
+        "name": "msg.payload",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1020,
+        "y": 880,
+        "wires": []
+    },
+    {
+        "id": "109656721c3f7f75",
+        "type": "debug",
+        "z": "378e6b74fa3e5e11",
+        "name": "ERROR",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1010,
+        "y": 1000,
+        "wires": []
+    },
+    {
+        "id": "82d309b4051d0622",
+        "type": "function",
+        "z": "378e6b74fa3e5e11",
+        "name": "handleMovie and Delete",
+        "func": "const text = msg.originalMessage.message.text;\nconst movieTitle = text.split('\\n\\n')[0];\nconst favoriteMovies = global.get(`favoriteMovies`);\nconst favoriteTitles = global.get(`favoriteTitles`);\nconst selectedMovie = favoriteMovies.find(movie => movie.title === movieTitle);\n\nlet hasMovie = Boolean;\n\nif (selectedMovie) {\n    hasMovie = true;\n} else {\n    hasMovie = false;\n}\n\nconst editedfavoriteMovies = favoriteMovies.filter(movie => movie !== selectedMovie);\nconst editedfavoriteTitles = favoriteTitles.filter(title => title !== movieTitle);\n\nglobal.set(`favoriteMovies`, editedfavoriteMovies);\nglobal.set(`favoriteTitles`, editedfavoriteTitles);\n\nmsg.payload = {\n    title: movieTitle,\n    hasMovie: hasMovie,\n};\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 530,
+        "y": 620,
+        "wires": [
+            [
+                "846f33e172afe055"
+            ]
+        ]
+    },
+    {
+        "id": "846f33e172afe055",
+        "type": "function",
+        "z": "378e6b74fa3e5e11",
+        "name": "prepare message",
+        "func": "const chatId = global.get(`chatId`);\nconst title = msg.payload.title;\nlet content = \"\"\n\nif (msg.payload.hasMovie) {\n    content = `${title}\\nВидалено з улюблених!`;   \n} else {\n    content = `${title}\\nВи вже видалили цей фільм!!!`;\n}\n\nmsg.payload = {\n    chatId: chatId,\n    type: \"message\",\n    content: content,\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 770,
+        "y": 620,
+        "wires": [
+            [
+                "e7d2191610b29698",
+                "a0f9659f637ea0db"
+            ]
+        ]
+    },
+    {
+        "id": "a0f9659f637ea0db",
+        "type": "function",
+        "z": "378e6b74fa3e5e11",
+        "name": "handle empty favorite",
+        "func": "const chatId = global.get(`chatId`);\nconst favoriteMovies = global.get(`favoriteMovies`);\n\nif (favoriteMovies === null || favoriteMovies.length === 0) {\n    msg.payload = {\n        chatId: chatId,\n        type: \"message\",\n        content: \"Список улюблених фільмів порожній😢\",\n    }\n} else {\n    return null;\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1020,
+        "y": 620,
+        "wires": [
+            [
+                "e7d2191610b29698"
+            ]
+        ]
     }
 ]
